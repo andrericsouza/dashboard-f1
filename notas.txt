@@ -1,0 +1,34 @@
+# Projeto F1
+
+1 - Coletar dados da F1.
+2 - enviar via kafka (streaming)
+3 - salvar em banco relacional (ex: postgres)
+4 - exibir grafico em tempo real do status da corrida.
+5 - Usar o Airflow para salvar os dados em outro lugar (ex: minio)
+
+
+1 - Dados coletados do kaggle:
+	https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020
+	Estes dados são o resultado da coleta via API do site http://ergast.com/mrd/
+
+	utilizado o notebook F1.ipynb para separar os dados das corridas de 2022.
+	arquivo salvo em ./dados/2022.csv
+
+
+2 - Imagem Docker criado com ajuda do ChatGPT. 
+	Feito alguns ajustes, pois não estava completo...
+	Incrementado o kafka-ui para visualizar os producer e consumers mais fácil(via web).
+	Incrementado o jupyter lab para podermos rodar os comandos de dentro do ambiente docker.
+
+	Vamos usar este docker-compose para colocar as outras imagens que precisamos.
+
+	# verifica o status
+	docker-compose ps
+	#cria o producer
+	docker-compose exec kafka1 kafka-topics --create --topic f1-2022 --partitions 1 --replication-factor 2 --if-not-exists --bootstrap-server kafka1:9092
+	#envia a mensagem para teste
+	docker-compose exec kafka1 bash -c "echo 'teste 1' | kafka-console-producer --topic f1-2022 --bootstrap-server kafka1:9092"
+	#consome a mensagem
+	docker-compose exec kafka1 kafka-console-consumer --topic f1-2022 --bootstrap-server kafka2:9092 --from-beginning
+
+	

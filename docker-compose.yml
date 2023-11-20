@@ -1,0 +1,140 @@
+version: '3'
+services:
+  jupyter_lab:
+    container_name: jupyter_lab
+    hostname: jupyter_lab
+    image: jupyter/minimal-notebook
+    ports: 
+      - "8888:8888"
+    environment: 
+      - JUPYTER_ENABLE_LAB=yes
+    volumes: 
+      - ./jupyter:/projeto
+    working_dir: /projeto
+    command: "bash run_jupyterlab.sh"
+    networks:
+      - projeto
+    # restart: on-failure
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    # restart: on-failure
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - projeto
+
+  kafka1:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka1
+    # restart: on-failure
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092
+      KAFKA_LISTENERS: PLAINTEXT://:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    ports:
+      - "9092:9092"
+    volumes:
+      - /var/lib/kafka/data
+    networks:
+      - projeto
+
+  kafka2:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka2
+    # restart: on-failure
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_LISTENERS: PLAINTEXT://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    ports:
+      - "9093:9093"
+    volumes:
+      - /var/lib/kafka/data
+    networks:
+      - projeto
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    hostname: kafka-ui
+    ports:
+      - "8080:8080"
+    # restart: on-failure
+    depends_on:
+      - kafka1
+      - kafka2
+      - zookeeper
+    environment:
+      KAFKA_CLUSTERS_0_NAME: "Meu Cluster Kafka"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka1:9092,kafka2:9093"
+      KAFKA_CLUSTERS_0_ZOOKEEPER: "zookeeper:2181"
+      # AUTH_TYPE: "LOGIN_FORM"
+      # SPRING_SECURITY_USER_NAME: admin
+      # SPRING_SECURITY_USER_PASSWORD: admin
+    networks:
+      - projeto
+
+  postgres:
+    container_name: postgres_container
+    hostname: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      PGDATA: /data/postgres
+    volumes:
+       - ./postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - projeto
+    # restart: on-failure
+  
+  pgadmin:
+    container_name: pgadmin_container
+    hostname: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+       - ./pgadmin:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-80}:80"
+    networks:
+      - projeto
+    # restart: on-failure
+
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: on-failure
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./grafana:/var/lib/grafana
+      - ./grafana_imagens:/usr/share/grafana/public/img/andre
+    networks:
+      - projeto
+    environment:
+      - GF_INSTALL_PLUGINS=dalvany-image-panel,yesoreyeram-boomtheme-panel
+
+networks:
+  projeto:
+    name: projeto
+    driver: bridge
