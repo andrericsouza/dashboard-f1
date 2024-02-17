@@ -63,12 +63,13 @@ Para mais projetos como esse visite o [canal](https://www.youtube.com/@andre_ric
     hostname: postgres <br>
     port: 5432 <br>
     username: admin <br>
-10 - Crie o banco de dados F1. <br>
-11 - Execute o notebook [TABELAS_F1](jupyter\TABELAS_F1.ipynb) <br>
-12 - Acesse o Grafana: <http://localhost:3000> . Provavelmente irá pedir login e senha: admin/admin <br>
-13 - Faça o import do arquivo Json [F1](grafana\f1.json) no Grafana <br>
-14 - Execute o notebook [Consumer](jupyter\Consumer.ipynb) <br>
-15 - Abra o Grafana novamente e visualize os graficos e dados sendo atualizados <br>
+10 - Crie o banco de dados f1. <br>
+11 - Crie o Schema f1_schema. <br>
+12 - Execute o notebook [TABELAS_F1](jupyter\TABELAS_F1.ipynb) <br>
+13 - Acesse o Grafana: <http://localhost:3000> . Provavelmente irá pedir login e senha: admin/admin <br>
+14 - Faça o import do arquivo Json [F1](grafana\f1.json) no Grafana <br>
+15 - Execute o notebook [Consumer](jupyter\Consumer.ipynb) <br>
+16 - Abra o Grafana novamente e visualize os graficos e dados sendo atualizados <br>
 
 ---
 
